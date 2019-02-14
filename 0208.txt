@@ -1,0 +1,34 @@
+﻿<%--JSP주석,지시어,jstl,el주석-->
+/* (자바,자바스크립트)주석, css주석 */
+// (자바,자바스크립트)한줄주석
+<!--html(마크업)주석,xml주석-->
+
+#####################################################################################################################################
+
+<!-- ktGiGA 에너지 관제 웹서비스 개발 -->
+
+<!-- 스마트 조명 SLA체크박스 코드 수정 -->
+
+<!-- 마크업-->
+<input type="checkbox" id="checkSla3" name="svcLvl" value="L3" checked="checked"><label for="checkSla3">L3</label>
+<input type="checkbox" id="checkSla2" name="svcLvl" value="L2" checked="checked"><label for="checkSla2">L2</label>
+<input type="checkbox" id="checkSla1" name="svcLvl" value="L1" checked="checked"><label for="checkSla1">L1</label>
+
+#####################################################################################################################################
+
+//스크립트
+//체크박스 하나만 있을시 체크유지
+
+    $("#checkSla1").click(function () {        
+        if ($("input[name=svcLvl]:checked").length==0) {             
+             $("input[id=checkSla1]").prop("checked", true);        
+        }               
+    $("#checkSla2").click(function () {    
+        if ($("input[name=svcLvl]:checked").length==0) {
+             $("input[id=checkSla2]").prop("checked", true);        
+        }        
+    $("#checkSla3").click(function () {    
+        if ($("input[name=svcLvl]:checked").length==0) {
+             $("input[id=checkSla3]").prop("checked", true);    
+        }
+                                 

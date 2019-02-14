@@ -1,0 +1,67 @@
+﻿/*(네트워크or수용국)마크업을 light.jsp추가 후 테이블표에 출력하기 위한 쿼리 넘어가는 설정 추가*/
+
+#####################################################################################################################################
+
+<!--마크업 추가-->
+                            <li>
+                            <label for="">네트워크 or 수용국</label>
+                            <div class="opts">
+                                <span class="wrap-select multi" style="width:calc(40% - 10px); margin-right: 3px">
+                                    <select id="search_types2" name="search_types2" multiple class="form-control">
+                                        <option value="N">네트워크</option>
+                                        <option value="A">수용국</option>
+                                    </select>
+                                </span>
+                                <input type="text" id="search_keyword2" name="search_keyword2" title="검색어 입력" style="width:calc(60% + 2px)">
+                            </div>
+                            </li>
+
+#####################################################################################################################################
+
+/*컨트롤단에 들어갈 필요한 변수에 값을 넣어주기 위해,해당 dto에서 값을 세팅해준다, */
+
+   /** 네트워크 or 수용국 */
+    @Getter @Setter private String search_keyword2;
+    
+    @Getter @Setter private String search_types2[];
+	
+#####################################################################################################################################
+	
+<!--해당 xml에 해당 SelectList를 찾아 네트워크or수용국의 type과 like를 이용한 검색필터 쿼리를 추가-->
+	
+	        <choose>
+                <when test='search_keyword2 != null and search_keyword2 != "" and search_types2 != null and search_types2.length > 0 and search_types2.length == 2'>
+                    and (bas.brch_nm like '%' || #{search_keyword2} || '%' or bas.obdng_nm like '%' || #{search_keyword2} || '%')
+                </when>
+                <when test='search_keyword2 != null and search_keyword2 != "" and search_types2 != null and search_types2.length > 0 and search_types2.length == 1'>
+                    and 
+                    (<foreach collection="search_types2" item="search_type2" separator="or">
+                        <if test='search_type2 == "N"'>bas.brch_nm like '%' || #{search_keyword2} || '%'</if>
+                        <if test='search_type2 == "A"'>bas.obdng_nm like '%' || #{search_keyword2} || '%'</if>
+                    </foreach>)
+                </when>
+            </choose>
+
+#####################################################################################################################################
+
+//검색시 에이젝스로 값을넘기고,스크립트롤 어떻게 넘기는지 구현
+
+                            var search_types2 = [];
+							//옵션에 체크갯수가 하나라도 있으면 그 값을 넘기고,선택이 안될때 옵션개수만큼 확인하여 전체가 체크되어 출력된다. 
+                            if($('#search_types2 option:selected').length > 0) {
+                                paramDatas.search_types2 = $('select[name="search_types2"]').val();
+                            } else {
+                                for(var i = 0; i < $('select[name="search_types2"] option').length; i++) {
+                                    search_types2.push($('select[name="search_types2"] option:eq(' + i + ')').val());
+                                }
+                                paramDatas.search_types2 = search_types2;
+                            }
+                            paramDatas.search_keyword2 = $('input[name="search_keyword2"]').val();
+							
+#####################################################################################################################################
+
+
+
+
+
+	

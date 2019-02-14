@@ -1,0 +1,132 @@
+﻿<!--한글을,영문화로 바꾸는 페이지 작업, _global이라는 프로젝트를 추가, locale를 이용해 주소를 영문버전(?language=en),한글버전으로(?language=ko) 나눈다-->
+
+#####################################################################################################################################
+
+ <!--기본적으로 다국어 처리 셋팅을 하기위해 만들어야 할 소스셋팅들이 있다. 그 셋팅들을 한 후 이름을 mesaage.??으로 만든다고 가정-->
+ <!--1번.일반적인 jsp에 입력된 한글(글자)을 바꿔줄때-->
+
+											<!--한글버전 값넣을떄 message_ko.properties파일에서 한글이름을 정해준다-->										
+											<!--message.사용할이름=바꿀이름명-->
+											
+											예시)message.selectAll=전체
+																		
+											<!--영문버전 값넣을떄 message_en.properties파일에서 영문이름을 정해준다-->
+																					
+											예시)message.selectAll=All									
+											
+											<!--마크업 안에 글자 대신 셋팅 -->
+											<!--<h3>안에는 원래 한글이였다고 가정)-->
+											예시)<h3><spring:message code="message.selectAll"/></h3> 
+
+#####################################################################################################################################
+<!--2번.영문화로 바꿀때 DB있는 값은 DB에서 값이 바뀌기 떄문에 설정해야한다. -->
+
+<!-- 예시) list.jsp -->
+
+<!--localeCode로 영문주소된 값을 갖는지, 한글주소된 값을 갖는지 호출-->
+<c:set var="localeCode" value="${pageContext.response.locale}" />
+
+									<select id="service_cds" name="service_cds" multiple class="form-control">
+									<c:choose>
+										<c:when test="${not empty cmmn:getServiceList()}">
+											<c:forEach items="${cmmn:getServiceList()}" var="service">
+												<option value="<c:out value='${service.service_type }'/>" >
+												//localeCode 값(eq)가 en,ko에 따른 컬럼을 선택(테이블데이타)
+													<c:choose>
+														<c:when test="${localeCode eq 'en'}">
+															<c:out value="${service.service_nm_eng }"/>
+														</c:when>
+														<c:otherwise>
+															<c:out value="${service.service_nm }"/>
+														</c:otherwise>                            
+													</c:choose>
+												</option>
+											</c:forEach>
+										</c:when>
+									</c:choose>
+									</select>
+
+<!-- el안 변수 처리한 service부분을 보면 cmmn:getServiceList()에 값이 있다는 것을 알 수 있다. 그 값을 따라가보면(찾는법 3번으로) 쿼리를 알 수 있다.	-->	
+
+<!--해당 VO에 영문 컬럼 추가(이 같은 경우는 테이블에 영문버전컬럼이 없었기 때문에 추가를 한 뒤여서, vo에 추가로 선언한다.)-->
+
+			/** 서비스 유형(영문) */
+			@Getter @Setter private String service_nm_eng;							
+
+<!--해당 XML에도 Select할 컬럼명 추가-->
+
+<!--service_nm_eng컬럼 추가-->
+
+		Select si.service_nm_eng
+		From mast.service_info si
+		
+<!--주의사항: 컬럼의 데이터들도 WHERE의 조건에 따라 쓰이는 값이있고,VO에 추가를 하면 안되는 경우가 있기 떄문에 쿼리를 이해하고 능동적으로 할 필요가 있다..
+이 쿼리에서는 값을 모두 영문화 시키면 되므로 From절에 컬럼만 추가하면 된다.-->
+            
+
+<!--컬럼에 데이터가 없고 option요소에 전체,선택취소 부분이 있는데, 이것은 플러그인으로 설정한 값이다 그러므로 플러그인쪽에 일반jsp 글자 바꾸듯 하면 된다-->
+
+#####################################################################################################################################											
+											
+<!--3번. cmmn:getServiceList()같은 경우, jstl에서 c:(코어),p:(프로퍼티)같이 사용자가 taglib를 만들어서 사용할 수 있다 cmmn은 사용자가 만든 taglib이다.
+보통 taglib선언은 페이지 맨 위에 include로 선언한다 그 경로로 들어가면 된다.-->
+
+<%@ taglib prefix="cmmn" uri="/WEB-INF/tld/customTagLibrary.tld" %>
+				
+<!--customTagLibrary.tld에  ${cmmn:getServiceList()}호출 하는 함수가 있을 것이고, name을 쓴다는 것을 기억하자. -->	
+									
+										<function>
+											<description>접근 서비스 목록</description>
+											<name>getServiceList</name>
+											<function-class>com.kt.eomp.common.tag.CustomAuthCheck</function-class>
+											<function-signature>java.util.List&lt;com.kt.eomp.business.base.auth.vo.AuthInfoServiceInfoRel&gt; getServiceList()</function-signature>
+											<example>
+												${cmmn:getServiceList()}
+											</example>
+										</function>
+										
+<!--위에 나와있는 클래스파일을 찾아가보면(CustomAuthCheck) 선언한 getServiceList()가 있을 것이다.  -->
+										
+										public static List<AuthInfoServiceInfoRel> getServiceList() {
+											List<AuthInfoServiceInfoRel> serviceList = new ArrayList<AuthInfoServiceInfoRel>();
+											
+											try {
+												// 로그인 사용자 접근 메뉴 목록 가져오기
+												//세큐리티컨텍스트라는 보안관련된 코드를 넣어주고 커스톰유저로 다시넣어주고 우리가 만든 로그인유저에 넣어준다
+												Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+												CustomUser customUser = (CustomUser) auth.getPrincipal();
+												User loginUser = customUser.getLoginUser();
+												
+												if (loginUser != null && loginUser.getAuthInfo() != null) {
+													AuthInfo authInfo = loginUser.getAuthInfo();
+													
+													// 로그인 사용자 접근 서비스 목록
+													serviceList = authInfo.getAuthInfoServiceInfoRelList();
+												}
+											} catch (Exception e) {
+												logger.error("사용자 접근 서비스 목록 접근시 예외 발생" + e.getMessage());
+											}
+											
+											return serviceList;
+										}
+										
+<!-- 리턴하는 리스트를 알 수있고, 넣어준 값을 보기 위해선 getAuthInfoServiceInfoRelList()를 컨트롤클릭 해서 구현단을 가면된다.-->
+																			
+										@Getter @Setter private List<AuthInfoServiceInfoRel> authInfoServiceInfoRelList; 이 나온다
+										
+<!-- AuthInfoServiceInfoRel의 구현에 들어가면 선언한 은닉화들이나 컬럼들을 볼 수 있고(@Getter @Setter private String service_nm; 등) 필요한 컬럼은 추가하면 된다
+선언한 것과 파일이름을 토대로 무슨 xml인지도 알 수 있다.(AuthInfoServiceInfoRel.java 파일 -> AuthInfoMapper.xml인 것을 추측 할 수 있다.) -->
+
+<!--AuthInfoMapper.xml를 들어가보면 resultMap이 있는데, getServiceList메서드에 리턴으로 값을 넣어준 authInfoServiceInfoRelList가 property인 것을 알 수 있고,
+selectServiceInfoRelList이름으로 select하는 것을 알 수 있다. 즉,id=selectServiceInfoRelList라는 쿼리를 사용한다는 것이다. -->
+																			
+						<resultMap>
+							<collection property="authInfoServiceInfoRelList" column="auth_id" javaType="java.util.ArrayList" ofType="com.kt.eomp.business.base.auth.vo.AuthInfoServiceInfoRel" select="selectServiceInfoRelList"/>				
+						</resultMap>
+												
+<!--resultMap 설명
+??.xml에 만든 select쿼리가 있겠죠? 그 중 selectServiceInfoRelList라는 이름을 사용하는 쿼리가 있다고 하고, resultMap을 쓰면<collection property=authInfoServiceInfoRelList /> 
+property에 authInfoServiceInfoRelList 와 selectServiceInfoRelList이 매핑이 된다는 말입니다.
+간단하게 예를 들면 게시판안에 두 개의 테이블 1:n관계가 있을때 resultMap을 쓰면 내용을 한번에 보여줄 수 있다는 말입니다.-->
+
+										
