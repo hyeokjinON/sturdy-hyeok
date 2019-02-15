@@ -129,7 +129,4 @@ selectServiceInfoRelList이름으로 select하는 것을 알 수 있다. 즉,id=
 property에 authInfoServiceInfoRelList 와 selectServiceInfoRelList이 매핑이되서 가져다 쓸 수 있다는 말입니다. -->
 
 
-
-
-
 										
