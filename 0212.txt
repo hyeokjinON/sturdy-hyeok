@@ -126,7 +126,9 @@ selectServiceInfoRelList이름으로 select하는 것을 알 수 있다. 즉,id=
 												
 <!--resultMap 설명
 ??.xml에 만든 select쿼리가 있겠죠? 그 중 selectServiceInfoRelList라는 이름을 사용하는 쿼리가 있다고 하고, resultMap을 쓰면<collection property=authInfoServiceInfoRelList /> 
-property에 authInfoServiceInfoRelList 와 selectServiceInfoRelList이 매핑이 된다는 말입니다.
-간단하게 예를 들면 게시판안에 두 개의 테이블 1:n관계가 있을때 resultMap을 쓰면 내용을 한번에 보여줄 수 있다는 말입니다.-->
+property에 authInfoServiceInfoRelList 와 selectServiceInfoRelList이 매핑이되서 가져다 쓸 수 있다는 말입니다. -->
+
+
+
 
 										

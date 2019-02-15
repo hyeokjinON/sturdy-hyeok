@@ -1,0 +1,70 @@
+﻿<!--resultMap 간단예시-->
+<!--게시판안에 두 개의 테이블 1:n관계가 있을때 resultMap을 쓰면 내용을 한번에 보여줄 수 있다
+만약 게시판안 게시판(board)과 댓글(comments)테이블이 있다면-->
+
+//먼저 board vo혹은 dto에 List<comment>를 변수로 받아온다
+
+class  Board{
+    private String board;
+    private String title;
+    private String content;
+    private String writer;
+    private List<Comment> comments;
+ 
+    //getter, setter 생략
+}
+#############################################################
+
+<!-- 
+첫번쨰 select id="getBoardById" 쿼리문에서 resultMap id로 받아와서 매핑이되고,컬럼(<result property="boardid" column="BOARDID"/>같은)의 개수를 맞춰줘서 넣는다.(board쪽 연결완료)
+두번째 resultMap의 collection select="getCommentListById"는 두번째 쿼리문과 맵핑이 되서 property에 comments(List<Comment>)넣어주고 쿼리를 실행하면 파라미터는 column=boardid(where조건)를 가지고 하위 댓글리스트를 가져온다.
+-->
+
+<resultMap id="boradResult" type="BoardVO">
+    <result property="boardid" column="BOARDID"/>
+    <result property="title" column="TITLE"/>
+    <result property="content" column="CONTENT"/>
+    <collection property="comments" column="BOARDID" javaType="java.util.ArrayList" ofType="CommentVO" select="getCommentListById"/>
+</resultMap>
+ 
+ <!--첫번쨰-->
+<select id="getBoardById" resultMap="boardResult">
+    SELECT boardid,
+		   title, 
+		   content 
+	FROM board 
+	WHERE boardid = #{boardid}
+</select>
+
+<!--두번쨰-->
+<select id="getCommentListById" resultType="CommentVO">
+    SELECT commentid, 
+		   boardid, 
+		   writer, 
+		   content 
+	FROM comment 
+	WHERE boardid = #{boardid}
+</select>
+
+
+<!--만약 WHERE에 변수처리를 여러개 해야 할때면, 즉 column을 여러개 넘겨야 하는데
+	column="{value=COLUMN1, value2=COLUMN2}"
+이런식으로 넣으면 된다 예시를 보면,(writer은 글쓴이라고 하자)
+
+그리고 column에 여러개 처리해야 되기 떄문에 parameterType="java.util.Map"을 꼭 지정해야 주어야 한다.
+-->
+
+<collection property="comments" column="{boardid=BOARDID,writer=WRITER}" javaType="java.util.ArrayList" ofType="CommentVO" select="getMyCommentListById"/>
+ 
+<select id="getMyCommentListById" parameterType="java.util.Map" resultType="CommentVO">
+    SELECT id, 
+		   writer, 
+		   content 
+	FROM comment 
+	WHERE boardid = #{boardid} AND writer = #{writer}
+</select>
+
+
+
+
+
